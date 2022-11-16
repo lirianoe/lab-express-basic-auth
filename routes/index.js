@@ -2,6 +2,7 @@ const router = require("express").Router();
 const bcryptjs = require('bcryptjs')
 const User = require('../models/User.model')
 
+
 /* GET home page */
 router.get("/", (req, res, next) => {
   res.render("index");
@@ -41,5 +42,52 @@ router.post('/signup', (req, res, next) => {
     })
 
 })
+
+  router.get('/login', (req, res ,next) => {
+    res.render('login.hbs');
+  })
+
+  router.post('/login', (req, res, next) => {
+      const { username, password } = req.body
+
+      if(!username|| !password){
+        res.render('login.hbs', { errorMessage: 'Sorry you forgot username or password' });
+        return;
+    }
+
+    User.findOne({ username })
+    .then(foundUser => {
+
+      if(!foundUser){
+        res.render('login.hbs', { errorMessage: 'The User does not exist' })
+        return
+      }
+
+      const validPassword = bcryptjs.compareSync(password, foundUser.password)
+
+      if(!validPassword){
+        res.render('login.hbs', { errorMessage: 'Incorrect password' })
+        return
+      }
+
+      req.session.user = foundUser
+      res.render('profile.hbs', foundUser)
+
+
+
+
+    })
+
+
+    .catch(err => {
+      console.log(err)
+      res.send(err)
+    })
+      
+  })
+
+  router.get('/profile', (req, res, next) => {
+    res.render('profile.hbs', req.session.user)
+  })
 
 module.exports = router;
