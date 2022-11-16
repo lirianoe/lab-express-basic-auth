@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const bcryptjs = require('bcryptjs')
 const User = require('../models/User.model')
+const { isLoggedIn, isAnon } = require('../middlewares/auth.middlewares')
 
 
 /* GET home page */
@@ -86,8 +87,16 @@ router.post('/signup', (req, res, next) => {
       
   })
 
-  router.get('/profile', (req, res, next) => {
+  router.get('/profile', isLoggedIn, (req, res, next) => {
     res.render('profile.hbs', req.session.user)
+  })
+
+  router.get('/main', isAnon, (req, res, next) => {
+    res.render('main.hbs')
+  })
+
+  router.get('/private', isLoggedIn, (req, res, next) => {
+    res.render('private.hbs')
   })
 
 module.exports = router;
